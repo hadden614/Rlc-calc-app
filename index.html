@@ -1,226 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>RLC Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#0a0a0a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="RLC Calc" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-
+  <meta charset="UTF-8">
+  <title>AC Circuit Calculator – General RLC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
-      background: #0b0b0b;
-      color: #e9e9e9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 18px;
-      line-height: 1.4;
+      padding: 1rem;
+      max-width: 900px;
     }
-
     h1 {
-      text-align: center;
       font-size: 1.4rem;
-      margin-bottom: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
     }
-
-    .card {
-      background: #151515;
-      border: 1px solid #222;
-      padding: 16px;
-      border-radius: 10px;
-      margin-bottom: 18px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.35);
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
     }
-
+    .field {
+      flex: 1 1 150px;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
     label {
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      display: block;
-      opacity: 0.9;
+      margin-bottom: 0.15rem;
     }
-
-    input, select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: #0f0f0f;
-      color: #e9e9e9;
-      margin-bottom: 14px;
+    input, select, button {
+      padding: 0.35rem;
       font-size: 1rem;
     }
-
     button {
+      cursor: pointer;
+    }
+    .outputs {
+      margin-top: 1rem;
+      border-top: 1px solid #ccc;
+      padding-top: 0.75rem;
+    }
+    .out-box {
+      border: 1px solid #ddd;
+      padding: 0.4rem 0.5rem;
+      border-radius: 4px;
+      min-height: 1.4rem;
+      background: #f9f9f9;
+    }
+    table {
       width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      background: #007aff;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-top: 4px;
-      box-shadow: 0 4px 12px rgba(0,122,255,0.35);
-    }
-
-    button:active {
-      transform: scale(0.97);
-    }
-
-    .results {
-      white-space: pre-wrap;
-      font-family: Menlo, Consolas, monospace;
-      background: #101010;
-      border-radius: 8px;
-      padding: 14px;
-      border: 1px solid #222;
+      border-collapse: collapse;
       font-size: 0.85rem;
-      color: #cfcfcf;
+      margin-top: 0.75rem;
     }
-
-    .title {
-      font-size: 1rem;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #fff;
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.25rem 0.4rem;
+      text-align: right;
     }
-
-    .section-title {
-      margin-top: 14px;
-      font-weight: 600;
-      color: #48a8ff;
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+    thead {
+      background: #f3f3f3;
+      position: sticky;
+      top: 0;
+    }
+    .comp-row {
+      border: 1px solid #eee;
+      padding: 0.3rem;
+      border-radius: 4px;
+    }
+    .small-btn {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.4rem;
     }
   </style>
 </head>
-
 <body>
 
-<h1>RLC Calculator</h1>
+<h1>AC Circuit Calculator (General RLC)</h1>
 
-<div class="card">
-  <label>Circuit Type</label>
-  <select id="ctype">
-    <option value="series_RL">Series RL</option>
-    <option value="series_RC">Series RC</option>
-    <option value="series_RLC">Series RLC</option>
-    <option value="parallel_RL">Parallel RL</option>
-    <option value="parallel_RC">Parallel RC</option>
-    <option value="parallel_RLC">Parallel RLC</option>
-  </select>
-
-  <label>Source Voltage (V)</label>
-  <input id="V" type="number" inputmode="decimal" placeholder="120">
-
-  <label>Frequency (Hz)</label>
-  <input id="f" type="number" inputmode="decimal" placeholder="60">
-
-  <label>Resistance R (Ω)</label>
-  <input id="R" type="number" inputmode="decimal" placeholder="50">
-
-  <label>Inductance L (H)</label>
-  <input id="L" type="number" inputmode="decimal" placeholder="0.2">
-
-  <label>Capacitance C (µF)</label>
-  <input id="C" type="number" inputmode="decimal" placeholder="5">
-
-  <button onclick="calculate()">Calculate</button>
+<!-- BASIC SETTINGS -->
+<div class="row">
+  <div class="field">
+    <label for="mode">Connection</label>
+    <select id="mode">
+      <option value="series">Series</option>
+      <option value="parallel">Parallel</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="V">Source Voltage V (Vrms)</label>
+    <input type="number" id="V" step="any">
+  </div>
+  <div class="field">
+    <label for="f">Frequency f (Hz)</label>
+    <input type="number" id="f" step="any">
+  </div>
 </div>
 
-<div class="card">
-  <div class="title">Results</div>
-  <div id="results" class="results">Enter values and press Calculate.</div>
+<!-- COMPONENT LIST -->
+<h2 style="font-size:1.1rem;margin-top:0.75rem;">Components</h2>
+
+<div id="components"></div>
+
+<button id="addCompBtn">+ Add Component</button>
+
+<div class="row">
+  <button id="calcBtn">Calculate</button>
+  <button id="clearBtn">Clear</button>
+</div>
+
+<!-- TOTAL OUTPUTS -->
+<div class="outputs">
+  <h2 style="font-size:1.1rem;">Totals (Equivalent Circuit)</h2>
+
+  <div class="row">
+    <div class="field">
+      <label>|Z| (Ω)</label>
+      <div class="out-box out" id="Ztot"></div>
+    </div>
+    <div class="field">
+      <label>IT (A)</label>
+      <div class="out-box out" id="IT"></div>
+    </div>
+    <div class="field">
+      <label>PTRUE (W)</label>
+      <div class="out-box out" id="Ptrue"></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>PVARL total (VAR)</label>
+      <div class="out-box out" id="PvarL"></div>
+    </div>
+    <div class="field">
+      <label>PVARC total (VAR)</label>
+      <div class="out-box out" id="PvarC"></div>
+    </div>
+    <div class="field">
+      <label>PAPP LOAD (VA)</label>
+      <div class="out-box out" id="PappLoad"></div>
+    </div>
+    <div class="field">
+      <label>PAPP SOURCE (VA)</label>
+      <div class="out-box out" id="PappSource"></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Equivalent XL (Ω)</label>
+      <div class="out-box out" id="XL_eq"></div>
+    </div>
+    <div class="field">
+      <label>Equivalent XC (Ω)</label>
+      <div class="out-box out" id="XC_eq"></div>
+    </div>
+    <div class="field">
+      <label>Power Factor</label>
+      <div class="out-box out" id="PF"></div>
+    </div>
+    <div class="field">
+      <label>θ (degrees)</label>
+      <div class="out-box out" id="Theta"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PER-ELEMENT RESULTS -->
+<div class="outputs">
+  <h2 style="font-size:1.1rem;">Per-Element Results</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Label</th>
+        <th>Type</th>
+        <th>Value (Ω/H/F)</th>
+        <th>R or XL/XC (Ω)</th>
+        <th>|Z| (Ω)</th>
+        <th>I (A)</th>
+        <th>V (V)</th>
+        <th>P (W)</th>
+        <th>Q (VAR)</th>
+      </tr>
+    </thead>
+    <tbody id="perElementBody"></tbody>
+  </table>
 </div>
 
 <script>
-/* SAME ENGINE YOU APPROVED, CLEANED + FORMATTED */
+  // ---------- UI: add/remove components ----------
+  const compContainer = document.getElementById('components');
+  const addBtn = document.getElementById('addCompBtn');
 
-function val(id){let x=parseFloat(document.getElementById(id).value);return isNaN(x)?0:x}
-function fmt(x,d=3){return (!isFinite(x))?"—":x.toFixed(d)}
+  function addComponentRow(defaultType = 'R') {
+    const row = document.createElement('div');
+    row.className = 'row comp-row';
 
-function calculate(){
-  const type=document.getElementById("ctype").value;
-  const V=val("V"), f=val("f"), R=val("R"), L=val("L"), Cuf=val("C");
-  const C=Cuf*1e-6, w=2*Math.PI*f;
-  const XL=(L>0&&f>0)?w*L:0;
-  const XC=(C>0&&f>0)?1/(w*C):Infinity;
+    row.innerHTML = `
+      <div class="field">
+        <label>Type</label>
+        <select class="comp-type">
+          <option value="R"${defaultType === 'R' ? ' selected' : ''}>R (Ω)</option>
+          <option value="L"${defaultType === 'L' ? ' selected' : ''}>L (H)</option>
+          <option value="C"${defaultType === 'C' ? ' selected' : ''}>C (F)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Value</label>
+        <input type="number" step="any" class="comp-value">
+      </div>
+      <div class="field">
+        <label>Label (optional)</label>
+        <input type="text" class="comp-label" placeholder="R1, L2, C3">
+      </div>
+      <div class="field" style="flex:0 0 auto;align-items:flex-start;">
+        <label>&nbsp;</label>
+        <button type="button" class="small-btn remove-comp">X</button>
+      </div>
+    `;
 
-  let IR=0,IL=0,IC=0,IT=0,Z=0,theta=0,PF=0;
-  let Ptrue=0,PvarL=0,PvarC=0,Sload=0,Ssrc=0;
+    row.querySelector('.remove-comp').addEventListener('click', () => {
+      compContainer.removeChild(row);
+    });
 
-  if(type.includes("series")){
-    let Xnet=0;
-    if(type==="series_RL")Xnet=XL;
-    if(type==="series_RC")Xnet=-XC;
-    if(type==="series_RLC")Xnet=XL-XC;
-
-    Z=Math.sqrt(R*R+Xnet*Xnet);
-    IT=V/Z;
-    IR=IT; IL=(XL?IT:0); IC=(XC!==Infinity?IT:0);
-
-    theta=Math.atan2(Xnet,R); PF=Math.cos(theta);
-
-    Ptrue=V*IT*PF;
-    PvarL=(XL>0)?V*IT*Math.sin(theta):0;
-    PvarC=(XC!==Infinity)?-V*IT*Math.sin(theta):0;
-
-    Sload=V*IT; Ssrc=V*IT;
+    compContainer.appendChild(row);
   }
 
-  if(type.includes("parallel")){
-    IR=(R?V/R:0);
-    IL=(type.includes("RL")||type.includes("RLC"))&&XL>0?V/XL:0;
-    IC=(type.includes("RC")||type.includes("RLC"))&&XC!==Infinity?V/XC:0;
+  addBtn.addEventListener('click', () => addComponentRow());
 
-    let IQ=IL-IC;
-    IT=Math.sqrt(IR*IR+IQ*IQ);
-    theta=Math.atan2(IQ,IR); PF=Math.cos(theta);
+  // Start with three rows for convenience
+  addComponentRow('R');
+  addComponentRow('L');
+  addComponentRow('C');
 
-    Sload=V*Math.sqrt(IR*IR+IL*IL+IC*IC);
-    Ssrc=V*IT;
-
-    Ptrue=V*IR; PvarL=V*IL; PvarC=-V*IC;
-    Z=V/IT;
+  // ---------- Complex helpers ----------
+  function c(re, im) { return { re, im }; }
+  function cAdd(a, b) { return c(a.re + b.re, a.im + b.im); }
+  function cSub(a, b) { return c(a.re - b.re, a.im - b.im); }
+  function cMul(a, b) {
+    return c(a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re);
+  }
+  function cDiv(a, b) {
+    const den = b.re*b.re + b.im*b.im;
+    if (!den) return c(0, 0);
+    return c((a.re*b.re + a.im*b.im)/den,
+             (a.im*b.re - a.re*b.im)/den);
+  }
+  function cInv(a) {
+    const den = a.re*a.re + a.im*a.im;
+    if (!den) return c(0, 0);
+    return c(a.re/den, -a.im/den);
+  }
+  function cMag(a) { return Math.hypot(a.re, a.im); }
+  function cAngleDeg(a) {
+    return Math.atan2(a.im, a.re) * 180 / Math.PI;
   }
 
-  let out="";
-  let thDeg=theta*180/Math.PI;
+  function clearOutputs() {
+    document.querySelectorAll('.out').forEach(o => o.textContent = '');
+    document.getElementById('perElementBody').innerHTML = '';
+  }
 
-  out+=`CIRCUIT: ${type.toUpperCase()}\n\n`;
+  function show(id, val, digits = 3) {
+    if (!isFinite(val)) val = 0;
+    document.getElementById(id).textContent = val.toFixed(digits);
+  }
 
-  out+=`--- REACTANCES ---\n`;
-  out+=`X_L = ${fmt(XL)} Ω\n`;
-  out+=`X_C = ${XC===Infinity?"∞":fmt(XC)} Ω\n\n`;
+  // ---------- Core calculation ----------
+  function calculate() {
+    clearOutputs();
 
-  out+=`--- CURRENTS ---\n`;
-  out+=`I_R = ${fmt(IR)} A\n`;
-  out+=`I_L = ${fmt(IL)} A\n`;
-  out+=`I_C = ${fmt(IC)} A\n`;
-  out+=`I_T = ${fmt(IT)} A\n\n`;
+    const Vval = parseFloat(document.getElementById('V').value) || 0;
+    const f    = parseFloat(document.getElementById('f').value) || 0;
+    const mode = document.getElementById('mode').value; // "series" or "parallel"
+    const w    = 2 * Math.PI * f;
 
-  out+=`--- IMPEDANCE ---\n`;
-  out+=`Z = ${fmt(Z)} Ω\n\n`;
+    // Get components
+    const rows = document.querySelectorAll('.comp-row');
+    const comps = [];
+    rows.forEach((row, idx) => {
+      const type  = row.querySelector('.comp-type').value;
+      const value = parseFloat(row.querySelector('.comp-value').value);
+      const label = row.querySelector('.comp-label').value.trim() || (type + (idx+1));
 
-  out+=`--- POWER ---\n`;
-  out+=`P_TRUE = ${fmt(Ptrue)} W\n`;
-  out+=`P_VAR_L = ${fmt(PvarL)} VAR\n`;
-  out+=`P_VAR_C = ${fmt(PvarC)} VAR\n`;
-  out+=`P_APP_LOAD = ${fmt(Sload)} VA\n`;
-  out+=`P_APP_SOURCE = ${fmt(Ssrc)} VA\n\n`;
+      if (!isFinite(value) || value <= 0) return;
 
-  out+=`--- POWER FACTOR & ANGLE ---\n`;
-  out+=`θ = ${fmt(thDeg)}°\n`;
-  out+=`PF = ${fmt(PF)}\n`;
+      let Z;
+      if (type === 'R') {
+        Z = c(value, 0);
+      } else if (type === 'L') {
+        if (f <= 0) return;
+        const XL = w * value;
+        Z = c(0, XL);
+      } else { // C
+        if (f <= 0) return;
+        const XC = 1 / (w * value);
+        Z = c(0, -XC);
+      }
+      comps.push({ type, value, label, Z });
+    });
 
-  document.getElementById("results").textContent=out;
-}
+    if (!comps.length || Vval <= 0 || f <= 0) {
+      return;
+    }
+
+    const Vphasor = c(Vval, 0);
+
+    // Total impedance and element currents/voltages
+    let Ztot;
+    if (mode === 'series') {
+      Ztot = comps.reduce((acc, el) => cAdd(acc, el.Z), c(0, 0));
+    } else {
+      // parallel: sum admittances, then invert
+      let Ytot = c(0, 0);
+      comps.forEach(el => {
+        Ytot = cAdd(Ytot, cInv(el.Z));
+      });
+      Ztot = cInv(Ytot);
+    }
+
+    const Zmag = cMag(Ztot);
+    const I_total_ph = cDiv(Vphasor, Ztot);
+    const IT = cMag(I_total_ph);
+
+    // Per-element calculations
+    let Ptotal = 0;
+    let Q_L_total = 0;
+    let Q_C_total = 0;
+
+    const tbody = document.getElementById('perElementBody');
+
+    comps.forEach(el => {
+      let I_ph, V_ph;
+
+      if (mode === 'series') {
+        I_ph = I_total_ph;
+        V_ph = cMul(I_total_ph, el.Z);
+      } else {
+        V_ph = Vphasor;
+        I_ph = cDiv(Vphasor, el.Z);
+      }
+
+      const I_mag = cMag(I_ph);
+      const V_mag = cMag(V_ph);
+      const Rpart = el.Z.re;
+      const Xpart = el.Z.im;
+      const Zmag_el = cMag(el.Z);
+
+      const P = I_mag * I_mag * Rpart;
+      const Q = I_mag * I_mag * Xpart;
+
+      Ptotal += P;
+      if (Q > 0) Q_L_total += Q;
+      if (Q < 0) Q_C_total += -Q;
+
+      // For table: "reactance or R"
+      let RXdisplay = 0;
+      if (el.type === 'R') {
+        RXdisplay = Rpart;
+      } else if (el.type === 'L') {
+        RXdisplay = Xpart; // XL
+      } else {
+        RXdisplay = -Xpart; // XC positive
+      }
+
+      const tr = document.createElement('tr');
+      function td(text) {
+        const cell = document.createElement('td');
+        cell.textContent = text;
+        return cell;
+      }
+
+      tr.appendChild(td(el.label));
+      tr.appendChild(td(el.type));
+      tr.appendChild(td(valueToStr(el.value)));
+      tr.appendChild(td(numToStr(RXdisplay)));
+      tr.appendChild(td(numToStr(Zmag_el)));
+      tr.appendChild(td(numToStr(I_mag)));
+      tr.appendChild(td(numToStr(V_mag)));
+      tr.appendChild(td(numToStr(P)));
+      tr.appendChild(td(numToStr(Q)));
+
+      tbody.appendChild(tr);
+    });
+
+    const Qtotal = Q_L_total - Q_C_total;
+    const S = Vval * IT;
+
+    // Equivalent series reactance from total Q
+    let XL_eq = 0, XC_eq = 0;
+    if (IT > 0) {
+      const Xeq = Qtotal / (IT * IT);
+      if (Xeq > 0) XL_eq = Xeq;
+      if (Xeq < 0) XC_eq = -Xeq;
+    }
+
+    const PF = (S > 0) ? (Ptotal / S) : 0;
+    const thetaDeg = Math.atan2(Qtotal, Ptotal) * 180 / Math.PI;
+
+    // Totals to screen
+    show('Ztot', Zmag);
+    show('IT', IT);
+    show('Ptrue', Ptotal);
+    show('PvarL', Q_L_total);
+    show('PvarC', Q_C_total);
+    show('PappLoad', S);
+    show('PappSource', S);
+    show('XL_eq', XL_eq);
+    show('XC_eq', XC_eq);
+    show('PF', PF, 4);
+    show('Theta', thetaDeg, 2);
+  }
+
+  function numToStr(v, digits = 3) {
+    if (!isFinite(v)) v = 0;
+    return Number(v.toFixed(digits)).toString();
+  }
+
+  function valueToStr(v) {
+    if (!isFinite(v)) return '';
+    return v.toString();
+  }
+
+  function clearAll() {
+    document.querySelectorAll('.comp-value').forEach(i => i.value = '');
+    document.getElementById('V').value = '';
+    document.getElementById('f').value = '';
+    clearOutputs();
+  }
+
+  document.getElementById('calcBtn').addEventListener('click', calculate);
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
 </script>
 
 </body>
