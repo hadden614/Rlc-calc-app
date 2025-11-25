@@ -1,210 +1,421 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AC Circuit Calculator – General RLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>AC Series / Parallel RL RC RLC Master Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
-      padding: 1rem;
-      max-width: 900px;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+    .card {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
     h1 {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
+      font-size: 20px;
+      margin-top: 0;
+      text-align: center;
     }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
     }
     .field {
-      flex: 1 1 150px;
       display: flex;
       flex-direction: column;
-      font-size: 0.9rem;
+      gap: 4px;
     }
     label {
-      margin-bottom: 0.15rem;
+      font-size: 13px;
+      font-weight: 600;
     }
-    input, select, button {
-      padding: 0.35rem;
-      font-size: 1rem;
+    input, select {
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
     }
     button {
-      cursor: pointer;
-    }
-    .outputs {
-      margin-top: 1rem;
-      border-top: 1px solid #ccc;
-      padding-top: 0.75rem;
-    }
-    .out-box {
-      border: 1px solid #ddd;
-      padding: 0.4rem 0.5rem;
-      border-radius: 4px;
-      min-height: 1.4rem;
-      background: #f9f9f9;
-    }
-    table {
+      margin-top: 16px;
       width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      margin-top: 0.75rem;
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #222;
+      color: #fff;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.25rem 0.4rem;
-      text-align: right;
+    button:active {
+      transform: scale(0.98);
     }
-    th:first-child, td:first-child {
-      text-align: left;
+    .results {
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+      font-size: 14px;
     }
-    thead {
-      background: #f3f3f3;
-      position: sticky;
-      top: 0;
+    .results h2 {
+      font-size: 16px;
+      margin: 4px 0 8px;
     }
-    .comp-row {
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 8px;
+    }
+    .result-item {
+      background: #fafafa;
+      padding: 6px 8px;
+      border-radius: 4px;
       border: 1px solid #eee;
-      padding: 0.3rem;
-      border-radius: 4px;
     }
-    .small-btn {
-      font-size: 0.8rem;
-      padding: 0.25rem 0.4rem;
+    .result-label {
+      font-weight: 600;
+      font-size: 13px;
     }
-    #status {
-      margin-bottom: 0.75rem;
-      padding: 0.4rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      background: #f1f5f9;
+    .note {
+      font-size: 11px;
+      color: #666;
+      margin-top: 6px;
     }
-    #status.error {
-      background: #fee2e2;
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
+  <div class="card">
+    <h1>AC Series / Parallel RL RC RLC Master Calculator</h1>
 
-<h1>AC Circuit Calculator (General RLC)</h1>
+    <div class="row">
+      <div class="field">
+        <label for="connectionType">Connection type</label>
+        <select id="connectionType">
+          <option value="series" selected>Series</option>
+          <option value="parallel">Parallel</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="circuitConfig">Circuit</label>
+        <select id="circuitConfig">
+          <option value="rl">RL</option>
+          <option value="rc">RC</option>
+          <option value="rlc" selected>RLC</option>
+        </select>
+      </div>
+    </div>
+    <div class="note">
+      RL = R + L, RC = R + C, RLC = R + L + C. Switch Series / Parallel on the left.
+    </div>
 
-<div id="status">Calculator ready. Enter V, f, components, then press Calculate.</div>
+    <div class="grid" style="margin-top:12px;">
+      <div class="field">
+        <label for="voltage">Source voltage (V<sub>RMS</sub>)</label>
+        <input id="voltage" type="number" step="any" placeholder="e.g. 120" />
+      </div>
+      <div class="field">
+        <label for="frequency">Frequency (Hz)</label>
+        <input id="frequency" type="number" step="any" placeholder="e.g. 60" />
+      </div>
+      <div class="field">
+        <label for="resistance">Resistance R (Ω)</label>
+        <input id="resistance" type="number" step="any" placeholder="e.g. 50" />
+      </div>
+    </div>
 
-<!-- BASIC SETTINGS -->
-<div class="row">
-  <div class="field">
-    <label for="mode">Connection</label>
-    <select id="mode">
-      <option value="series">Series</option>
-      <option value="parallel">Parallel</option>
-    </select>
+    <div id="inductanceGroup" style="margin-top:12px;">
+      <h2 style="font-size:14px;margin:0 0 4px;">Inductance / Inductive Reactance</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="inductance">Inductance L (mH)</label>
+          <input id="inductance" type="number" step="any" placeholder="leave blank if using X<sub>L</sub>" />
+        </div>
+        <div class="field">
+          <label for="xL">Inductive reactance X<sub>L</sub> (Ω)</label>
+          <input id="xL" type="number" step="any" placeholder="overrides L if filled" />
+        </div>
+      </div>
+      <div class="note">
+        If X<sub>L</sub> is entered, it is used directly. Otherwise X<sub>L</sub> = 2πfL.
+      </div>
+    </div>
+
+    <div id="capacitanceGroup" style="margin-top:12px;">
+      <h2 style="font-size:14px;margin:12px 0 4px;">Capacitance / Capacitive Reactance</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="capacitance">Capacitance C (µF)</label>
+          <input id="capacitance" type="number" step="any" placeholder="leave blank if using X<sub>C</sub>" />
+        </div>
+        <div class="field">
+          <label for="xC">Capacitive reactance X<sub>C</sub> (Ω)</label>
+          <input id="xC" type="number" step="any" placeholder="overrides C if filled" />
+        </div>
+      </div>
+      <div class="note">
+        If X<sub>C</sub> is entered, it is used directly. Otherwise X<sub>C</sub> = 1 / (2πfC).
+      </div>
+    </div>
+
+    <button id="calcBtn">Calculate</button>
+
+    <div class="results" id="results" style="display:none;">
+      <h2>Results</h2>
+      <div class="results-grid">
+        <div class="result-item"><span class="result-label">X<sub>L</sub>:</span> <span id="resXL"></span></div>
+        <div class="result-item"><span class="result-label">X<sub>C</sub>:</span> <span id="resXC"></span></div>
+        <div class="result-item"><span class="result-label">Net reactance X (series):</span> <span id="resXnet"></span></div>
+        <div class="result-item"><span class="result-label">|Z| (Ω):</span> <span id="resZ"></span></div>
+
+        <div class="result-item"><span class="result-label">I<sub>R</sub>:</span> <span id="resIR"></span></div>
+        <div class="result-item"><span class="result-label">I<sub>L</sub>:</span> <span id="resIL"></span></div>
+        <div class="result-item"><span class="result-label">I<sub>C</sub>:</span> <span id="resIC"></span></div>
+        <div class="result-item"><span class="result-label">I<sub>T</sub>:</span> <span id="resIT"></span></div>
+
+        <div class="result-item"><span class="result-label">P<sub>true</sub> (W):</span> <span id="resPtrue"></span></div>
+        <div class="result-item"><span class="result-label">Q<sub>L</sub> (VAR):</span> <span id="resQ_L"></span></div>
+        <div class="result-item"><span class="result-label">Q<sub>C</sub> (VAR):</span> <span id="resQ_C"></span></div>
+
+        <div class="result-item"><span class="result-label">S<sub>load</sub> (VA):</span> <span id="resSload"></span></div>
+        <div class="result-item"><span class="result-label">S<sub>source</sub> (VA):</span> <span id="resSsource"></span></div>
+
+        <div class="result-item"><span class="result-label">Power factor:</span> <span id="resPF"></span></div>
+        <div class="result-item"><span class="result-label">θ (degrees):</span> <span id="resTheta"></span></div>
+      </div>
+      <div class="note" id="pfNote"></div>
+    </div>
   </div>
-  <div class="field">
-    <label for="V">Source Voltage V (Vrms)</label>
-    <input type="number" id="V" step="any" placeholder="e.g. 120">
-  </div>
-  <div class="field">
-    <label for="f">Frequency f (Hz)</label>
-    <input type="number" id="f" step="any" placeholder="e.g. 60">
-  </div>
-</div>
 
-<!-- COMPONENT LIST -->
-<h2 style="font-size:1.1rem;margin-top:0.75rem;">Components</h2>
+  <script>
+    const connectionTypeEl = document.getElementById("connectionType");
+    const circuitConfigEl = document.getElementById("circuitConfig");
+    const inductanceGroup = document.getElementById("inductanceGroup");
+    const capacitanceGroup = document.getElementById("capacitanceGroup");
 
-<div id="components"></div>
+    function clearInductanceInputs() {
+      document.getElementById("inductance").value = "";
+      document.getElementById("xL").value = "";
+    }
 
-<button id="addCompBtn">+ Add Component</button>
+    function clearCapacitanceInputs() {
+      document.getElementById("capacitance").value = "";
+      document.getElementById("xC").value = "";
+    }
 
-<div class="row">
-  <button id="calcBtn">Calculate</button>
-  <button id="clearBtn">Clear</button>
-</div>
+    function updateVisibility() {
+      const config = circuitConfigEl.value;
+      if (config === "rl") {
+        inductanceGroup.style.display = "block";
+        capacitanceGroup.style.display = "none";
+        clearCapacitanceInputs();
+      } else if (config === "rc") {
+        inductanceGroup.style.display = "none";
+        capacitanceGroup.style.display = "block";
+        clearInductanceInputs();
+      } else {
+        // rlc
+        inductanceGroup.style.display = "block";
+        capacitanceGroup.style.display = "block";
+      }
+    }
 
-<!-- TOTAL OUTPUTS -->
-<div class="outputs">
-  <h2 style="font-size:1.1rem;">Totals (Equivalent Circuit)</h2>
+    circuitConfigEl.addEventListener("change", updateVisibility);
+    connectionTypeEl.addEventListener("change", () => {
+      // Visibility of L/C is only based on RL/RC/RLC, so just refresh.
+      updateVisibility();
+    });
+    updateVisibility();
 
-  <div class="row">
-    <div class="field">
-      <label>|Z| (Ω)</label>
-      <div class="out-box out" id="Ztot"></div>
-    </div>
-    <div class="field">
-      <label>IT (A)</label>
-      <div class="out-box out" id="IT"></div>
-    </div>
-    <div class="field">
-      <label>PTRUE (W)</label>
-      <div class="out-box out" id="Ptrue"></div>
-    </div>
-  </div>
+    function num(val) {
+      const v = parseFloat(val);
+      return isNaN(v) ? 0 : v;
+    }
 
-  <div class="row">
-    <div class="field">
-      <label>PVARL total (VAR)</label>
-      <div class="out-box out" id="PvarL"></div>
-    </div>
-    <div class="field">
-      <label>PVARC total (VAR)</label>
-      <div class="out-box out" id="PvarC"></div>
-    </div>
-    <div class="field">
-      <label>PAPP LOAD (VA)</label>
-      <div class="out-box out" id="PappLoad"></div>
-    </div>
-    <div class="field">
-      <label>PAPP SOURCE (VA)</label>
-      <div class="out-box out" id="PappSource"></div>
-    </div>
-  </div>
+    function fmt(val, digits = 3) {
+      if (!isFinite(val)) return "N/A";
+      return Number(val).toFixed(digits);
+    }
 
-  <div class="row">
-    <div class="field">
-      <label>Equivalent XL (Ω)</label>
-      <div class="out-box out" id="XL_eq"></div>
-    </div>
-    <div class="field">
-      <label>Equivalent XC (Ω)</label>
-      <div class="out-box out" id="XC_eq"></div>
-    </div>
-    <div class="field">
-      <label>Power Factor</label>
-      <div class="out-box out" id="PF"></div>
-    </div>
-    <div class="field">
-      <label>θ (degrees)</label>
-      <div class="out-box out" id="Theta"></div>
-    </div>
-  </div>
-</div>
+    document.getElementById("calcBtn").addEventListener("click", () => {
+      const V = num(document.getElementById("voltage").value);
+      const f = num(document.getElementById("frequency").value);
+      const R = num(document.getElementById("resistance").value);
+      const connection = connectionTypeEl.value; // "series" or "parallel"
+      const config = circuitConfigEl.value;      // "rl", "rc", "rlc"
 
-<!-- PER-ELEMENT RESULTS -->
-<div class="outputs">
-  <h2 style="font-size:1.1rem;">Per-Element Results</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Label</th>
-        <th>Type</th>
-        <th>Value (Ω/H/F)</th>
-        <th>R or XL/XC (Ω)</th>
-        <th>|Z| (Ω)</th>
-        <th>I (A)</th>
-        <th>V (V)</th>
-        <th>P (W)</th>
-        <th>Q (VAR)</th>
-      </tr>
-    </thead>
-    <tbody id="perElementBody"></tbody>
-  </table>
-</div>
+      if (V === 0 || R === 0) {
+        alert("Enter at least non-zero source voltage and resistance.");
+        return;
+      }
+      if (f === 0) {
+        alert("Frequency must be non-zero.");
+        return;
+      }
 
-<script>
-  // ---------- helpers ----------
-  const statusBox = document.get
+      // Read L, C, XL, XC
+      let XL_input = document.getElementById("xL").value.trim();
+      let XC_input = document.getElementById("xC").value.trim();
+      let L_input  = document.getElementById("inductance").value.trim();
+      let C_input  = document.getElementById("capacitance").value.trim();
+
+      let XL = 0;
+      let XC = 0;
+
+      // Inductive reactance
+      if (config === "rc") {
+        XL = 0;
+      } else {
+        if (XL_input !== "") {
+          XL = num(XL_input);
+        } else if (L_input !== "") {
+          const L_H = num(L_input) * 1e-3;
+          XL = 2 * Math.PI * f * L_H;
+        } else {
+          XL = 0;
+        }
+      }
+
+      // Capacitive reactance
+      if (config === "rl") {
+        XC = 0;
+      } else {
+        if (XC_input !== "") {
+          XC = num(XC_input);
+        } else if (C_input !== "") {
+          const C_F = num(C_input) * 1e-6;
+          if (C_F !== 0) {
+            XC = 1 / (2 * Math.PI * f * C_F);
+          } else {
+            XC = 0;
+          }
+        } else {
+          XC = 0;
+        }
+      }
+
+      let IR = 0, IL = 0, IC = 0, IT = 0;
+      let Ptrue = 0, Q_L = 0, Q_C = 0, S = 0;
+      let pf = 0, thetaDeg = 0, Zmag = 0;
+      let Xnet = 0;
+
+      if (connection === "series") {
+        // SERIES: Z = R + j(XL - XC)
+        Xnet = XL - XC;
+        const Z = Math.sqrt(R * R + Xnet * Xnet);
+        if (Z === 0) {
+          alert("Impedance ended up zero. Check your inputs.");
+          return;
+        }
+        Zmag = Z;
+        IT = V / Z;
+        IR = IT;
+        IL = (config === "rc") ? 0 : IT;
+        IC = (config === "rl") ? 0 : IT;
+
+        Ptrue = IT * IT * R;
+        Q_L = (config === "rc" || XL === 0) ? 0 : IT * IT * XL;
+        Q_C = (config === "rl" || XC === 0) ? 0 : IT * IT * XC;
+        S = V * IT;
+
+        const cosTheta = R / Z;
+        pf = cosTheta;
+        const thetaRad = Math.atan2(Xnet, R);
+        thetaDeg = thetaRad * 180 / Math.PI;
+      } else {
+        // PARALLEL: currents split; use current triangle
+        IR = V / R;
+        IL = (config === "rc" || XL === 0) ? 0 : V / XL;
+        IC = (config === "rl" || XC === 0) ? 0 : V / XC;
+
+        const Ireactive = IL - IC; // + = inductive, - = capacitive
+        IT = Math.sqrt(IR * IR + Ireactive * Ireactive);
+        if (IT === 0) {
+          alert("Total current ended up zero. Check your inputs.");
+          return;
+        }
+        Zmag = V / IT;
+
+        Ptrue = V * IR;
+        Q_L = V * IL;
+        Q_C = V * IC;
+        S = V * IT;
+
+        const pfMag = IR / IT;
+        let thetaAbs = Math.atan2(Math.abs(Ireactive), IR) * 180 / Math.PI;
+        if (Ireactive < 0) {
+          thetaDeg = -thetaAbs;
+        } else {
+          thetaDeg = thetaAbs;
+        }
+        // signed PF: positive for inductive (lagging), negative for capacitive (leading)
+        pf = pfMag * (Ireactive >= 0 ? 1 : -1);
+        // For Net reactance X (series-only), we'll set "N/A" below.
+        Xnet = NaN;
+      }
+
+      // Update UI
+      document.getElementById("resXL").textContent = fmt(XL) + " Ω";
+      document.getElementById("resXC").textContent = fmt(XC) + " Ω";
+      if (connection === "series") {
+        document.getElementById("resXnet").textContent = fmt(Xnet) + " Ω";
+      } else {
+        document.getElementById("resXnet").textContent = "N/A (parallel)";
+      }
+      document.getElementById("resZ").textContent = fmt(Zmag) + " Ω";
+
+      document.getElementById("resIR").textContent = fmt(IR) + " A";
+      document.getElementById("resIL").textContent =
+        (config === "rc" || XL === 0) ? "N/A (no L)" : fmt(IL) + " A";
+      document.getElementById("resIC").textContent =
+        (config === "rl" || XC === 0) ? "N/A (no C)" : fmt(IC) + " A";
+      document.getElementById("resIT").textContent = fmt(IT) + " A";
+
+      document.getElementById("resPtrue").textContent = fmt(Ptrue) + " W";
+      document.getElementById("resQ_L").textContent =
+        (config === "rc" || XL === 0) ? "N/A" : fmt(Q_L) + " VAR";
+      document.getElementById("resQ_C").textContent =
+        (config === "rl" || XC === 0) ? "N/A" : fmt(Q_C) + " VAR";
+
+      document.getElementById("resSload").textContent = fmt(S) + " VA";
+      document.getElementById("resSsource").textContent = fmt(S) + " VA";
+
+      document.getElementById("resPF").textContent = fmt(pf, 4);
+      document.getElementById("resTheta").textContent = fmt(thetaDeg, 2) + "°";
+
+      const pfNote = document.getElementById("pfNote");
+      if (connection === "series") {
+        if (Xnet > 0) {
+          pfNote.textContent = "Series circuit: inductive (lagging) power factor, θ positive.";
+        } else if (Xnet < 0) {
+          pfNote.textContent = "Series circuit: capacitive (leading) power factor, θ negative.";
+        } else {
+          pfNote.textContent = "Series circuit: unity power factor, θ ≈ 0°.";
+        }
+      } else {
+        // parallel
+        if (pf > 0) {
+          pfNote.textContent = "Parallel circuit: inductive (lagging) if θ > 0, capacitive (leading) if θ < 0.";
+        } else {
+          pfNote.textContent = "Parallel circuit: negative PF indicates leading (capacitive) behavior.";
+        }
+      }
+
+      document.getElementById("results").style.display = "block";
+    });
+  </script>
+</body>
+</html>
